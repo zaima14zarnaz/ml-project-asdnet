@@ -15,91 +15,91 @@ from tensorflow.keras.layers import (
 
 
 
-
-# def build_saliency_rank_model(config, mode):
-#     # *********************** INPUTS ***********************
-#     input_obj_features = Input(shape=(config.SAL_OBJ_NUM, 1, 1, config.OBJ_FEAT_SIZE), name="input_obj_feat")
-#     input_obj_spatial_masks = Input(shape=(config.SAL_OBJ_NUM, 32, 32, 1), name="input_obj_spatial_masks")
-#     input_P5_feat = Input(shape=(32, 32, 256), name="input_P5_feat")
-
-#     if mode == "training":
-#         input_target_rank = Input(shape=(config.SAL_OBJ_NUM,), name="input_gt_ranks")
-
-#     # *********************** PROCESS Image/P5 FEATURES ***********************
-#     img_feat = Conv2D(config.BOTTLE_NECK_SIZE, (3, 3), name="img_feat_conv_1")(input_P5_feat)
-#     img_feat = BatchNorm(name="img_feat_bn_1")(img_feat, training=config.TRAIN_BN)
-#     img_feat = Activation('relu')(img_feat)
-
-#     img_feat = GlobalAveragePooling2D()(img_feat)
-
-#     # *********************** SELECTIVE ATTENTION MODULE ***********************
-#     # Reduce dimension to BOTTLNECK
-#     obj_feature = TimeDistributed(Conv2D(config.BOTTLE_NECK_SIZE, (1, 1)), name="obj_feat_reduce_conv1")(input_obj_features)
-#     obj_feature = TimeDistributed(BatchNorm(), name='obj_feat_reduce_bn1')(obj_feature, training=config.TRAIN_BN)
-#     obj_feature = Activation('relu')(obj_feature)
-
-#     obj_feature = Lambda(lambda x: K.squeeze(K.squeeze(x, 3), 2), name="obj_feat_squeeze")(obj_feature)
-
-#     sa_feat = selective_attention_module(config.NUM_ATTN_HEADS, obj_feature, img_feat, config)
-
-#     # *********************** OBJECT SPATIAL MASK MODULE ***********************
-#     spatial_mask_feat = object_spatial_mask_module(input_obj_spatial_masks, config)
-
-#     # CONCATENATE OBJ_FEAT_MASKS + OBJ_SPATIAL_MASKS
-#     obj_feature = Concatenate()([sa_feat, spatial_mask_feat])
-
-#     # *********************** FINAL OBJECT FEATURE ***********************
-#     # FC layer for reducing the attention features
-#     final_obj_feat = TimeDistributed(Dense(config.RANK_FEAT_SIZE), name="obj_final_feat_dense_1")(obj_feature)
-#     final_obj_feat = TimeDistributed(BatchNorm(), name='obj_final_feat_bn_1')(final_obj_feat, training=config.TRAIN_BN)
-#     final_obj_feat = Activation('relu')(final_obj_feat)
-
-#     # *********************** OBJECT RANK ORDER NETWORK ***********************
-#     # Ranking Network
-#     point_scoring_model = SaliencyRankClass.build_rank_class_model(config)
-
-#     # <- Insert autoregressive decoder here
-#     # Perform Ranking
-#     # object_rank = point_scoring_model(final_obj_feat)
-#     # object_rank = TimeDistributed(point_scoring_model, name="td_point_score")(final_obj_feat)
-#     B = tf.shape(final_obj_feat)[0]
-#     R = tf.shape(final_obj_feat)[1]
-#     F = tf.shape(final_obj_feat)[2]  # 512
-
-#     feat2d = tf.reshape(final_obj_feat, (-1, F))         # (B*R, 512)
-#     scores2d = point_scoring_model(feat2d)               # (B*R, out_dim)
-#     object_rank = tf.reshape(scores2d, (B, R, -1))       # (B, R, out_dim)
-
-
-#     if mode == "training":
-#         # *********************** LOSS **********************
-#         # Rank Loss
-#         rank_loss = Lambda(lambda x: Losses.sparse_categorical_cross_entropy_pos_contrib(*x), name="rank_loss")(
-#             [input_target_rank, object_rank])
-
-#         # *********************** FINAL ***********************
-#         # Model
-#         inputs = [input_obj_features, input_obj_spatial_masks, input_P5_feat,
-#                   input_target_rank]
-#         outputs = [object_rank, rank_loss]
-#         model = Model(inputs=inputs, outputs=outputs, name="attn_shift_saliency_rank_model")
-#     else:
-#         # *********************** FINAL ***********************
-#         # Model
-#         inputs = [input_obj_features, input_obj_spatial_masks,
-#                   input_P5_feat]
-#         outputs = [object_rank]
-#         model = Model(inputs=inputs, outputs=outputs, name="attn_shift_saliency_rank_model")
-
-#     return model
-
+# ******** Model Architecture from original authors ***************
 def build_saliency_rank_model(config, mode):
     # *********************** INPUTS ***********************
     input_obj_features = Input(shape=(config.SAL_OBJ_NUM, 1, 1, config.OBJ_FEAT_SIZE), name="input_obj_feat")
     input_obj_spatial_masks = Input(shape=(config.SAL_OBJ_NUM, 32, 32, 1), name="input_obj_spatial_masks")
     input_P5_feat = Input(shape=(32, 32, 256), name="input_P5_feat")
 
-    
+    if mode == "training":
+        input_target_rank = Input(shape=(config.SAL_OBJ_NUM,), name="input_gt_ranks")
+
+    # *********************** PROCESS Image/P5 FEATURES ***********************
+    img_feat = Conv2D(config.BOTTLE_NECK_SIZE, (3, 3), name="img_feat_conv_1")(input_P5_feat)
+    img_feat = BatchNorm(name="img_feat_bn_1")(img_feat, training=config.TRAIN_BN)
+    img_feat = Activation('relu')(img_feat)
+
+    img_feat = GlobalAveragePooling2D()(img_feat)
+
+    # *********************** SELECTIVE ATTENTION MODULE ***********************
+    # Reduce dimension to BOTTLNECK
+    obj_feature = TimeDistributed(Conv2D(config.BOTTLE_NECK_SIZE, (1, 1)), name="obj_feat_reduce_conv1")(input_obj_features)
+    obj_feature = TimeDistributed(BatchNorm(), name='obj_feat_reduce_bn1')(obj_feature, training=config.TRAIN_BN)
+    obj_feature = Activation('relu')(obj_feature)
+
+    obj_feature = Lambda(lambda x: K.squeeze(K.squeeze(x, 3), 2), name="obj_feat_squeeze")(obj_feature)
+
+    sa_feat = selective_attention_module(config.NUM_ATTN_HEADS, obj_feature, img_feat, config)
+
+    # *********************** OBJECT SPATIAL MASK MODULE ***********************
+    spatial_mask_feat = object_spatial_mask_module(input_obj_spatial_masks, config)
+
+    # CONCATENATE OBJ_FEAT_MASKS + OBJ_SPATIAL_MASKS
+    obj_feature = Concatenate()([sa_feat, spatial_mask_feat])
+
+    # *********************** FINAL OBJECT FEATURE ***********************
+    # FC layer for reducing the attention features
+    final_obj_feat = TimeDistributed(Dense(config.RANK_FEAT_SIZE), name="obj_final_feat_dense_1")(obj_feature)
+    final_obj_feat = TimeDistributed(BatchNorm(), name='obj_final_feat_bn_1')(final_obj_feat, training=config.TRAIN_BN)
+    final_obj_feat = Activation('relu')(final_obj_feat)
+
+    # *********************** OBJECT RANK ORDER NETWORK ***********************
+    # Ranking Network
+    point_scoring_model = SaliencyRankClass.build_rank_class_model(config)
+
+    # <- Insert autoregressive decoder here
+    # Perform Ranking
+    # object_rank = point_scoring_model(final_obj_feat)
+    # object_rank = TimeDistributed(point_scoring_model, name="td_point_score")(final_obj_feat)
+    B = tf.shape(final_obj_feat)[0]
+    R = tf.shape(final_obj_feat)[1]
+    F = tf.shape(final_obj_feat)[2]  # 512
+
+    feat2d = tf.reshape(final_obj_feat, (-1, F))         # (B*R, 512)
+    scores2d = point_scoring_model(feat2d)               # (B*R, out_dim)
+    object_rank = tf.reshape(scores2d, (B, R, -1))       # (B, R, out_dim)
+
+
+    if mode == "training":
+        # *********************** LOSS **********************
+        # Rank Loss
+        rank_loss = Lambda(lambda x: Losses.sparse_categorical_cross_entropy_pos_contrib(*x), name="rank_loss")(
+            [input_target_rank, object_rank])
+
+        # *********************** FINAL ***********************
+        # Model
+        inputs = [input_obj_features, input_obj_spatial_masks, input_P5_feat,
+                  input_target_rank]
+        outputs = [object_rank, rank_loss]
+        model = Model(inputs=inputs, outputs=outputs, name="attn_shift_saliency_rank_model")
+    else:
+        # *********************** FINAL ***********************
+        # Model
+        inputs = [input_obj_features, input_obj_spatial_masks,
+                  input_P5_feat]
+        outputs = [object_rank]
+        model = Model(inputs=inputs, outputs=outputs, name="attn_shift_saliency_rank_model")
+
+    return model
+
+# ******** Modified model architecture ***************
+def build_saliency_rank_model(config, mode):
+    # *********************** INPUTS ***********************
+    input_obj_features = Input(shape=(config.SAL_OBJ_NUM, 1, 1, config.OBJ_FEAT_SIZE), name="input_obj_feat")
+    input_obj_spatial_masks = Input(shape=(config.SAL_OBJ_NUM, 32, 32, 1), name="input_obj_spatial_masks")
+    input_P5_feat = Input(shape=(32, 32, 256), name="input_P5_feat")
+
 
 
     # *********************** PROCESS Image/P5 FEATURES ***********************
@@ -223,7 +223,7 @@ def build_saliency_rank_model(config, mode):
     return model
 
 
-
+# ******** Module from original authors ***************
 def object_spatial_mask_module(in_obj_spatial_masks, config):
     # *********************** OBJECT SPATIAL MASKS ***********************
     obj_spa_mask = TimeDistributed(Conv2D(96, (5, 5), strides=2, padding="same"), name="obj_spatial_mask_conv_1")(
@@ -244,7 +244,7 @@ def object_spatial_mask_module(in_obj_spatial_masks, config):
 
     return obj_spatial_mask_feat
 
-
+# ******** Module from original authors ***************
 def selective_attention_module(num_heads, obj_feat, img_feat, config):
     head_outputs = []
     for h in range(num_heads):
@@ -292,6 +292,8 @@ def selective_attention_module(num_heads, obj_feat, img_feat, config):
 
     return final_obj_feat
 
+
+# ******** Newly added autogressive decoder for improved performance ***************
 def autoregressive_decoder(final_obj_feat, point_scoring_model, config,
                            num_steps=5, gt_rank_order=None, training=False):
     B = tf.shape(final_obj_feat)[0]
