@@ -22,47 +22,47 @@ The current implementation and results are based on pre-computing backbone and o
 
 1. Pre-train backbone for salient object detection (binary, no ranking). Download pre-trained COCO weights (mask_rcnn_coco.h5) from matterport, https://github.com/matterport/Mask_RCNN/releases. Create a new "weights/" folder in the root directory, then put the weight file inside it. Set data paths and run:
 ```
-python obj_sal_seg_branch/train.py
+python /ASDNet/asdNetTrain/Attention_Shift_Ranks/Attention_Shift_Saliency_Rank/obj_sal_seg_branch/train.py
 ```
 
 2. Pre-compute backbone and object features of GT objects for "train" and "val" datasplits. Set data paths and run twice for "train" and "val":
 ```
-python pre_process/pre_process_obj_feat_GT.py
+python /ASDNet/asdNetTrain/Attention_Shift_Ranks/Attention_Shift_Saliency_Rank/pre_process/pre_process_obj_feat_GT.py
 ```
 
 3.  Finally train the saliency rank model. Set data paths and run:
 ```
-python train.py
+python /ASDNet/asdNetTrain/Attention_Shift_Ranks/Attention_Shift_Saliency_Rank/train.py
 ```
 
 ## Testing
 Similarly to training, test set image features need to be pre-computed.
 
-1. Perform object detection. You can download the pre-trained weights from [google drive](https://drive.google.com/file/d/1A86orvY1O4G_HjEGgtvZ7kRwqsf0mIb8/view?usp=sharing). 
+1. Perform object detection. You can download the pre-trained weights file (filename: sal_seg_pretrain(1).h5) from [google drive](https://drive.google.com/drive/folders/1k5UgEdWck3AGSIppOtAORJei1HuQ1FNB?usp=sharing). 
 Set data paths and run:
 ```
-python pre_process/object_detection.py
+python /ASDNet/asdNetTest/Attention_Shift_Ranks/Attention_Shift_Saliency_Rank/pre_process/object_detection.py
 ```
 
 2. Pre-compute corresponding object features. Set data paths and run:
 ```
-python pre_process/pre_process_obj_feat.py
+python /ASDNet/asdNetTest/Attention_Shift_Ranks/Attention_Shift_Saliency_Rank/pre_process/pre_process_obj_feat.py
 ```
 
-3. Test the saliency rank model. The weights of the trained model from [google drive](https://drive.google.com/file/d/1fXFGvrS7aMd5FagM9n7-VaJPxRrPXbXN/view?usp=sharing).
+3. Test the saliency rank model. The weights of the trained model (filename: asdnet_auto_reg_decoder_3.h5) from [google drive](https://drive.google.com/drive/folders/1k5UgEdWck3AGSIppOtAORJei1HuQ1FNB?usp=sharing).
 Set data paths and run:
 ```
-python evaluation/predict.py
+python /ASDNet/asdNetTest/Attention_Shift_Ranks/Attention_Shift_Saliency_Rank/evaluation/predict.py
 ```
 This will generate predictions and save into files.
 
 4. Generate predicted Saliency Rank Maps (rank based on grayscale value). Set data paths and run:
 ```
-python evaluation/generate_saliency_map.py
+python /ASDNet/asdNetTest/Attention_Shift_Ranks/Attention_Shift_Saliency_Rank/evaluation/generate_saliency_map.py
 ```
 
 ## Evaluate
 To evaluate MAE and Salient Object Ranking (SOR) scores, set data paths and run:
 ```
-python evaluation/evaluate.py
+python /ASDNet/asdNetTest/Attention_Shift_Ranks/Attention_Shift_Saliency_Rank/evaluation/evaluate.py
 ```
