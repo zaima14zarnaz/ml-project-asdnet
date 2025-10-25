@@ -17,7 +17,7 @@ PRE_PROC_DATA_ROOT = "/home/zaimaz/Desktop/research1/QAGNet/Dataset/IRSR_ASSR/as
 if __name__ == '__main__':
     # weight_path = "/home/zaimaz/Desktop/research1/QAGNet/asdNet/Attention_Shift_Ranks/Attention_Shift_Saliency_Rank/logs/rank_model_config20251001T2043/Rank_Model_SAM_SMM_rank_model_config_0005.h5"
     # weight_path = "/home/zaimaz/Desktop/research1/QAGNet/asdNet3/Attention_Shift_Ranks/Attention_Shift_Saliency_Rank/weights/original_asdnet_trained_from_scratch.h5"
-    weight_path = "/home/zaimaz/Desktop/research1/QAGNet/asdNet/Attention_Shift_Ranks/Attention_Shift_Saliency_Rank/logs/rank_model_config20251015T2049/Rank_Model_SAM_SMM_rank_model_config_0005.h5"
+    weight_path = "/home/zaimaz/Desktop/research1/QAGNet/asdNetTest/Attention_Shift_Ranks/Attention_Shift_Saliency_Rank/weights/asdnet_auto_reg_decoder_3.h5"
 
     out_path = "../predictions/"
 

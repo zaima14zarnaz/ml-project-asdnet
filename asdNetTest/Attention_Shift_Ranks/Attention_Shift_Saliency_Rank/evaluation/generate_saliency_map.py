@@ -18,144 +18,6 @@ def load_data_single(data_path):
     return data
 
 
-# if __name__ == '__main__':
-
-#     model_pred_data_path = "../predictions/"
-
-#     out_path = "../saliency_maps/"
-
-#     if not os.path.exists(out_path):
-#         os.makedirs(out_path)
-
-#     # DATASET_ROOT = "/home/zaimaz/Desktop/research1/QAGNet/Dataset/IRSR_ASSR/"   # Change to your location
-#     # PRE_PROC_DATA_ROOT = "/home/zaimaz/Desktop/research1/QAGNet/Dataset/IRSR_ASSR/asd_extra/"    # Change to your location
-#     DATASET_ROOT = "/home/zaimaz/Desktop/research1/QAGNet/Dataset/ASSR/"   # Change to your location
-#     PRE_PROC_DATA_ROOT = "/home/zaimaz/Desktop/research1/QAGNet/Dataset/ASSR/ASSR_data/"    # Change to your location
-#     # DATASET_ROOT = "/home/zaimaz/Desktop/research1/QAGNet/Dataset/SIFR_ASSR/"   # Change to your location
-#     # PRE_PROC_DATA_ROOT = "/home/zaimaz/Desktop/research1/QAGNet/Dataset/SIFR_ASSR/asd_extra/"    # Change to your location
-
-
-
-#     data_split = "test"
-#     dataset = DatasetTest(DATASET_ROOT, PRE_PROC_DATA_ROOT, data_split,)
-
-#     config = RankModelConfig()
-
-#     num = len(dataset.img_ids)
-#     for i in range(num):
-#         image_id = dataset.img_ids[i]
-#         print("\n", i + 1, " / ", num, " - ", image_id)
-
-#         # ********** Model Predictions
-#         data_path = model_pred_data_path + dataset.img_ids[i]
-#         pred = load_data_single(data_path)
-
-#         ranks = np.squeeze(pred, axis=0)
-
-#         # ********** Dataset information
-#         og_image = dataset.load_image(image_id)
-#         original_shape = og_image.shape
-
-#         # Pre-processed Object Mask
-#         pre_proc_data = dataset.load_obj_pre_proc_data(image_id)
-#         obj_masks = pre_proc_data["obj_masks"]
-#         obj_masks = np.squeeze(obj_masks, axis=0)
-
-#         # Get Original bounding box for resize
-#         object_roi_masks = dataset.load_object_roi_masks(image_id)
-#         obj_roi = utils.extract_bboxes(object_roi_masks)
-
-#         # ********** Process Predicted Masks
-#         # First get saliency values
-#         masks = np.array_split(obj_masks, 2, axis=-1)
-#         masks = masks[1]
-#         masks = np.squeeze(masks, axis=-1)
-
-#         # Remove "padded" data
-#         masks = masks[:obj_roi.shape[0]]
-#         ranks = ranks[:obj_roi.shape[0]]
-
-#         # Resize the predicted masks to original size and location based on their available bounding boxes
-#         # Resize masks to original image size and set boundary threshold.
-#         N = obj_roi.shape[0]
-#         full_masks = []
-#         for j in range(N):
-#             # Convert neural network mask to full size mask
-#             full_mask = utils.unmold_mask(masks[j], obj_roi[j], original_shape)
-#             full_masks.append(full_mask)
-#         full_masks = np.stack(full_masks, axis=-1) \
-#             if full_masks else np.empty(original_shape[:2] + (0,))
-
-#         # ********** Process Predicted Ranks
-#         # rank_cls = np.argmax(ranks, axis=-1)
-
-#         # 1) Argmax over classes → (B, R)
-#         rank_cls = np.argmax(ranks, axis=-1)
-
-#         # 2) Now select the winning object index per sample
-#         # If you want top object per sample (not per object-row):
-#         rank_obj = np.argmax(np.max(ranks, axis=-1), axis=-1)   # (B,)
-
-#         # 3) Gather probabilities
-#         rank_prob = np.take_along_axis(ranks, rank_obj[:, None, None], axis=1).squeeze(1)  # (B, C)
-
-
-
-#         np_rank_scores = np.take(RANK_SCORE, rank_cls)
-
-#         # object-level probability per object
-#         obj_probs = np.max(ranks, axis=-1)          # (N,)
-#         np_rank_scores = np.take(RANK_SCORE, rank_cls)
-
-#         # Align with actual object count
-#         obj_probs = obj_probs[:N]
-#         np_rank_scores = np_rank_scores[:N]
-#         print(np_rank_scores)
-
-#         # Combine
-#         rank_scores = obj_probs * np_rank_scores
-#         rank_scores = np.reshape(rank_scores, (-1))
-
-#         # Only keep valid indices
-#         sorted_rank_list = sorted([(e, i) for i, e in enumerate(rank_scores[:N])], reverse=True)
-
-
-#         # ********** Generate Grey-scale Saliency Rank Map
-#         # sal_map = np.zeros(shape=(480, 640))
-#         # sal_map = np.zeros(shape=(640, 428))
-#         sal_map = np.zeros(shape=full_masks.shape[:2])
-
-
-#         num_pred_ranks = len(sorted_rank_list)
-#         num_ranks = 5
-#         if num_pred_ranks > 5:
-#             num_ranks = 5
-#         else:
-#             num_ranks = num_pred_ranks
-
-#         for j in range(num_ranks):
-#             p_r = sorted_rank_list[j][0]
-#             idx = sorted_rank_list[j][1]
-
-#             # Break once we reach BG objects
-#             if not p_r > 0:
-#                 break
-
-#             val = RANK_VALS[j+1]
-
-#             sal_map = np.where(full_masks[:, :, idx] == 1, val, sal_map)
-
-#         # sal_mask = np.zeros(shape=(480, 640, 3))
-#         # sal_mask = np.zeros(shape=(640, 425, 3))
-#         sal_mask = np.zeros(shape=(*full_masks.shape[:2], 3))
-#         sal_mask[:, :, 0] = sal_map
-#         sal_mask[:, :, 1] = sal_map
-#         sal_mask[:, :, 2] = sal_map
-
-#         f = out_path + image_id + ".png"
-
-#         cv2.imwrite(f, sal_mask)
-
 if __name__ == '__main__':
 
     model_pred_data_path = "../predictions/"
@@ -169,6 +31,9 @@ if __name__ == '__main__':
     PRE_PROC_DATA_ROOT = "/home/zaimaz/Desktop/research1/QAGNet/Dataset/IRSR_ASSR/asd_extra/"    # Change to your location
     # DATASET_ROOT = "/home/zaimaz/Desktop/research1/QAGNet/Dataset/ASSR/"   # Change to your location
     # PRE_PROC_DATA_ROOT = "/home/zaimaz/Desktop/research1/QAGNet/Dataset/ASSR/ASSR_data/"    # Change to your location
+    # DATASET_ROOT = "/home/zaimaz/Desktop/research1/QAGNet/Dataset/SIFR_ASSR/"   # Change to your location
+    # PRE_PROC_DATA_ROOT = "/home/zaimaz/Desktop/research1/QAGNet/Dataset/SIFR_ASSR/asd_extra/"    # Change to your location
+
 
 
     data_split = "test"
@@ -222,25 +87,44 @@ if __name__ == '__main__':
             if full_masks else np.empty(original_shape[:2] + (0,))
 
         # ********** Process Predicted Ranks
+        # rank_cls = np.argmax(ranks, axis=-1)
+
+        # 1) Argmax over classes → (B, R)
         rank_cls = np.argmax(ranks, axis=-1)
 
-        rank_cls = np.reshape(rank_cls, (-1, 1))
+        # 2) Now select the winning object index per sample
+        # If you want top object per sample (not per object-row):
+        rank_obj = np.argmax(np.max(ranks, axis=-1), axis=-1)   # (B,)
 
-        rank_prob = np.take_along_axis(ranks, rank_cls, axis=1)
+        # 3) Gather probabilities
+        rank_prob = np.take_along_axis(ranks, rank_obj[:, None, None], axis=1).squeeze(1)  # (B, C)
+
+
 
         np_rank_scores = np.take(RANK_SCORE, rank_cls)
 
-        rank_scores = np_rank_scores + rank_prob
+        # object-level probability per object
+        obj_probs = np.max(ranks, axis=-1)          # (N,)
+        np_rank_scores = np.take(RANK_SCORE, rank_cls)
 
-        rank_scores *= np_rank_scores
+        # Align with actual object count
+        obj_probs = obj_probs[:N]
+        np_rank_scores = np_rank_scores[:N]
+        # print(np_rank_scores)
 
+        # Combine
+        rank_scores = obj_probs * np_rank_scores
         rank_scores = np.reshape(rank_scores, (-1))
 
-        sorted_rank_list = sorted([(e, i) for i, e in enumerate(rank_scores)], reverse=True)
+        # Only keep valid indices
+        sorted_rank_list = sorted([(e, i) for i, e in enumerate(rank_scores[:N])], reverse=True)
+
 
         # ********** Generate Grey-scale Saliency Rank Map
         # sal_map = np.zeros(shape=(480, 640))
-        sal_map = np.zeros(shape=original_shape[:2])
+        # sal_map = np.zeros(shape=(640, 428))
+        sal_map = np.zeros(shape=full_masks.shape[:2])
+
 
         num_pred_ranks = len(sorted_rank_list)
         num_ranks = 5
@@ -262,7 +146,8 @@ if __name__ == '__main__':
             sal_map = np.where(full_masks[:, :, idx] == 1, val, sal_map)
 
         # sal_mask = np.zeros(shape=(480, 640, 3))
-        sal_mask = np.zeros(shape=original_shape[:2] + (3,))
+        # sal_mask = np.zeros(shape=(640, 425, 3))
+        sal_mask = np.zeros(shape=(*full_masks.shape[:2], 3))
         sal_mask[:, :, 0] = sal_map
         sal_mask[:, :, 1] = sal_map
         sal_mask[:, :, 2] = sal_map
@@ -270,4 +155,119 @@ if __name__ == '__main__':
         f = out_path + image_id + ".png"
 
         cv2.imwrite(f, sal_mask)
+
+# if __name__ == '__main__':
+
+#     model_pred_data_path = "../predictions/"
+
+#     out_path = "../saliency_maps/"
+
+#     if not os.path.exists(out_path):
+#         os.makedirs(out_path)
+
+#     DATASET_ROOT = "/home/zaimaz/Desktop/research1/QAGNet/Dataset/IRSR_ASSR/"   # Change to your location
+#     PRE_PROC_DATA_ROOT = "/home/zaimaz/Desktop/research1/QAGNet/Dataset/IRSR_ASSR/asd_extra/"    # Change to your location
+#     # DATASET_ROOT = "/home/zaimaz/Desktop/research1/QAGNet/Dataset/ASSR/"   # Change to your location
+#     # PRE_PROC_DATA_ROOT = "/home/zaimaz/Desktop/research1/QAGNet/Dataset/ASSR/ASSR_data/"    # Change to your location
+
+
+#     data_split = "test"
+#     dataset = DatasetTest(DATASET_ROOT, PRE_PROC_DATA_ROOT, data_split,)
+
+#     config = RankModelConfig()
+
+#     num = len(dataset.img_ids)
+#     for i in range(num):
+#         image_id = dataset.img_ids[i]
+#         print("\n", i + 1, " / ", num, " - ", image_id)
+
+#         # ********** Model Predictions
+#         data_path = model_pred_data_path + dataset.img_ids[i]
+#         pred = load_data_single(data_path)
+
+#         ranks = np.squeeze(pred, axis=0)
+
+#         # ********** Dataset information
+#         og_image = dataset.load_image(image_id)
+#         original_shape = og_image.shape
+
+#         # Pre-processed Object Mask
+#         pre_proc_data = dataset.load_obj_pre_proc_data(image_id)
+#         obj_masks = pre_proc_data["obj_masks"]
+#         obj_masks = np.squeeze(obj_masks, axis=0)
+
+#         # Get Original bounding box for resize
+#         object_roi_masks = dataset.load_object_roi_masks(image_id)
+#         obj_roi = utils.extract_bboxes(object_roi_masks)
+
+#         # ********** Process Predicted Masks
+#         # First get saliency values
+#         masks = np.array_split(obj_masks, 2, axis=-1)
+#         masks = masks[1]
+#         masks = np.squeeze(masks, axis=-1)
+
+#         # Remove "padded" data
+#         masks = masks[:obj_roi.shape[0]]
+#         ranks = ranks[:obj_roi.shape[0]]
+
+#         # Resize the predicted masks to original size and location based on their available bounding boxes
+#         # Resize masks to original image size and set boundary threshold.
+#         N = obj_roi.shape[0]
+#         full_masks = []
+#         for j in range(N):
+#             # Convert neural network mask to full size mask
+#             full_mask = utils.unmold_mask(masks[j], obj_roi[j], original_shape)
+#             full_masks.append(full_mask)
+#         full_masks = np.stack(full_masks, axis=-1) \
+#             if full_masks else np.empty(original_shape[:2] + (0,))
+
+#         # ********** Process Predicted Ranks
+#         rank_cls = np.argmax(ranks, axis=-1)
+
+#         rank_cls = np.reshape(rank_cls, (-1, 1))
+
+#         rank_prob = np.take_along_axis(ranks, rank_cls, axis=1)
+
+#         np_rank_scores = np.take(RANK_SCORE, rank_cls)
+
+#         rank_scores = np_rank_scores + rank_prob
+
+#         rank_scores *= np_rank_scores
+
+#         rank_scores = np.reshape(rank_scores, (-1))
+
+#         sorted_rank_list = sorted([(e, i) for i, e in enumerate(rank_scores)], reverse=True)
+
+#         # ********** Generate Grey-scale Saliency Rank Map
+#         # sal_map = np.zeros(shape=(480, 640))
+#         sal_map = np.zeros(shape=original_shape[:2])
+
+#         num_pred_ranks = len(sorted_rank_list)
+#         num_ranks = 5
+#         if num_pred_ranks > 5:
+#             num_ranks = 5
+#         else:
+#             num_ranks = num_pred_ranks
+
+#         for j in range(num_ranks):
+#             p_r = sorted_rank_list[j][0]
+#             idx = sorted_rank_list[j][1]
+
+#             # Break once we reach BG objects
+#             if not p_r > 0:
+#                 break
+
+#             val = RANK_VALS[j+1]
+
+#             sal_map = np.where(full_masks[:, :, idx] == 1, val, sal_map)
+
+#         # sal_mask = np.zeros(shape=(480, 640, 3))
+#         sal_mask = np.zeros(shape=original_shape[:2] + (3,))
+#         sal_mask[:, :, 0] = sal_map
+#         sal_mask[:, :, 1] = sal_map
+#         sal_mask[:, :, 2] = sal_map
+
+#         f = out_path + image_id + ".png"
+
+#         cv2.imwrite(f, sal_mask)
 

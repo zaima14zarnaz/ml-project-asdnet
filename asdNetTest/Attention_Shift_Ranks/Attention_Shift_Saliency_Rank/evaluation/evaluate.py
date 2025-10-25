@@ -121,7 +121,7 @@ def calculate_spr(dataset, model_pred_data_path, out_path):
             sal_idx = sal_obj_idx[s_i]
 
             if sal_idx >= len(obj_seg):
-                print(f"[Warning] sal_idx {sal_idx} out of bounds for obj_seg with length {len(obj_seg)} — skipping.")
+                # print(f"[Warning] sal_idx {sal_idx} out of bounds for obj_seg with length {len(obj_seg)} — skipping.")
                 continue
 
             seg = obj_seg[sal_idx]
@@ -135,10 +135,10 @@ def calculate_spr(dataset, model_pred_data_path, out_path):
         # print(pred_data_path)
         pred_sal_map = cv2.imread(pred_data_path)[:, :, 0]
         if pred_sal_map.shape != (HEIGHT, WIDTH):
-            print(f"[Warning] Resizing predicted saliency map from {pred_sal_map.shape} to ({HEIGHT},{WIDTH})")
+            # print(f"[Warning] Resizing predicted saliency map from {pred_sal_map.shape} to ({HEIGHT},{WIDTH})")
             pred_sal_map = cv2.resize(pred_sal_map, (WIDTH, HEIGHT), interpolation=cv2.INTER_NEAREST)
 
-        print(f'Predicted saliency map shape: {pred_sal_map.shape} at data path: {pred_data_path}')
+        # print(f'Predicted saliency map shape: {pred_sal_map.shape} at data path: {pred_data_path}')
 
         pred_ranks = []
 
@@ -151,12 +151,12 @@ def calculate_spr(dataset, model_pred_data_path, out_path):
             pred_pix_num = len(pred_pix_loc[0])
             r = 0
 
-            print(f'pred_pix_num: {pred_pix_num}, int(gt_pix_count * SEG_THRESHOLD): {int(gt_pix_count * SEG_THRESHOLD)}')
+            # print(f'pred_pix_num: {pred_pix_num}, int(gt_pix_count * SEG_THRESHOLD): {int(gt_pix_count * SEG_THRESHOLD)}')
 
             if pred_pix_num > int(gt_pix_count * SEG_THRESHOLD):
                 vals = pred_seg[pred_pix_loc[0], pred_pix_loc[1]]
                 mean_val = vals.mean()
-                print(f"[Segment {s_i}] Average gray value of predicted segment: {mean_val:.2f}")
+                # print(f"[Segment {s_i}] Average gray value of predicted segment: {mean_val:.2f}")
 
                 res = sc.mode(vals, axis=None, keepdims=False)
                 mode = res.mode.item() if res.mode.size else None
@@ -195,12 +195,12 @@ def calculate_spr(dataset, model_pred_data_path, out_path):
         if len(gt_ranks) > 1:
             spr = sc.spearmanr(gt_ranks, pred_ranks).correlation
             try:
-                print("valid_pix_counts:", valid_pix_counts)
+                # print("valid_pix_counts:", valid_pix_counts)
                 sa_spr = sc.spearmanr(gt_ranks, pred_ranks, alternative='two-sided', nan_policy='omit',
                                       axis=0, weights=valid_pix_counts).correlation
             except TypeError:
                 # Fallback if `spearmanr(..., weights=...)` not supported in current scipy version
-                print("[Warning] Your scipy version does not support weighted Spearman. Using unweighted SOR.")
+                # print("[Warning] Your scipy version does not support weighted Spearman. Using unweighted SOR.")
                 sa_spr = spr
         elif len(gt_ranks) == 1:
             spr = sa_spr = 1
@@ -211,7 +211,7 @@ def calculate_spr(dataset, model_pred_data_path, out_path):
         d = [image_id, spr, sa_spr, use_indices_list]
         spr_data.append(d)
         
-    print(f'{same_score}/{len(spr_data)} cases, sa and sa_sor scores are the same.')
+    # print(f'{same_score}/{len(spr_data)} cases, sa and sa_sor scores are the same.')
     with open(out_path, "wb") as f:
         pickle.dump(spr_data, f)
 
